@@ -13,27 +13,35 @@ bool is_digit(char c) {
 
 
 int str2int(const char *str) {
-  if (*str == '-') {
+  int sign = 1;
+  if (*str == '\0') {
     assert(1 == 0);
+  }
 
+
+  if (*str == '-') {
+    str++;
+    sign=-1;
+    if (*str == '\0') {
+      assert(1 == 0);
+    }
+  } else if (*str == '+') {
+    str++;
   }
 
   int result = 0;
-  int sign = 1;
-
   while (is_space(*str)) {
     str++;
   }
 
-  if (*str == '-' || *str == '+') {
-    sign = (*str == '-') ? -1 : 1;
-    str++;
-  }
+
 
   while (is_digit(*str)) {
     int digit = *str - 0x30;
     result = result * 10 + digit;
     str++;
   }
-  return result * sign;
+
+
+  return sign * result;
 }
