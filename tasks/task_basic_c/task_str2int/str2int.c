@@ -18,9 +18,10 @@ int str2int(const char* str) {
     assert(1 == 0);
   }
 
+
   if (*str == '-') {
     str++;
-    sign = -1;
+    sign=-1;
     if (*str == '\0') {
       assert(1 == 0);
     }
@@ -45,6 +46,7 @@ int str2int(const char* str) {
     result = result * 10 + digit;
     str++;
   }
+
 
   return sign * result;
 }
