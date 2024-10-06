@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "int2str.h"
 #include <stdbool.h>
 #include <stdlib.h>
