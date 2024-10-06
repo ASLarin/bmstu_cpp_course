@@ -7,7 +7,6 @@
 char* int2str(int number) {
   char* str = (char*)malloc(12 * sizeof(char));
 
-
   bool is_negative = false;
   int i = 0;
   long long int remainder = number;
