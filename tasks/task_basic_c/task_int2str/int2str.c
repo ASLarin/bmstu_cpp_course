@@ -4,27 +4,23 @@
 #define int_MAX 2147483647
 char* int2str(int number) {
   static char buffer[12];
+  long int h = number;
 
   bool is_negative = false;
   int i = 0;
-  if (number == int_MIN) {
-    return "-2147483648";
-  }
-  if (number == int_MAX) {
-    return "2147483647";
-  }
-  if (number < 0) {
+
+  if (h < 0) {
     is_negative = true;
-    number = -number;
+    h = -h;
   }
-  if (number == 0) {
+  if (h == 0) {
     buffer[i++] = '0';
     buffer[i] = '\0';
     return buffer;
   }
-  while (number != 0) {
-    buffer[i++] = (number % 10) + '0';
-    number /= 10;
+  while (h != 0) {
+    buffer[i++] = (h % 10) + '0';
+    h /= 10;
   }
   if (is_negative) {
     buffer[i++] = '-';
