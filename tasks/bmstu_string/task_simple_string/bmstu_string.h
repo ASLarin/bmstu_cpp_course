@@ -96,7 +96,7 @@ class basic_string {
     }
   }
 
-/// Оператор перемещающего присваивания
+/// Оператор перемещающего  присваивания
   basic_string &operator=(basic_string &&other) noexcept {
     if (this == &other) {
       return *this;
