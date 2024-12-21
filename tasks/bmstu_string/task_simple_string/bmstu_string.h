@@ -4,7 +4,7 @@
 
 namespace bmstu {
 template<typename T>
-class basic_string;  // объявление класс шаблонной строки
+class basic_string;  // объявление класс шаблонной строк
 
 
 typedef basic_string<char> string;
