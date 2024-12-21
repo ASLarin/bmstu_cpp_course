@@ -7,11 +7,11 @@ template<typename T>
 class basic_string;  // объявление класс шаблонной строк
 
 
-typedef basic_string<char> string;
-typedef basic_string<wchar_t> wstring;
-typedef basic_string<char8_t> u8string;
-typedef basic_string<char16_t> u16string;
-typedef basic_string<char32_t> u32string;
+using string =  basic_string<char>;
+using wstring =  basic_string<wchar_t> ;
+using u8string =  basic_string<char8_t> ;
+using u16string  = basic_string<char16_t> ;
+using u32string =  basic_string<char32_t> ;
 
 template<typename T>
 class basic_string {
