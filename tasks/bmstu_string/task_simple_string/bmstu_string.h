@@ -106,3 +106,4 @@ private:
   T* ptr_ = nullptr;
   size_t size_;
 };
+} // namespace bmstu
