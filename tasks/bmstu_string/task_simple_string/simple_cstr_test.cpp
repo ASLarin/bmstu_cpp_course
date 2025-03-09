@@ -254,3 +254,22 @@ TEST(StringTest, Item) {
   ASSERT_EQ(a_str[1], L'Т');
   ASSERT_EQ(a_str[a_str.size() - 1], L'Г');
 }
+
+TEST(StringTest, SubstringCompare) {
+  bmstu::string str("Hello World!");
+  bmstu::string substr1("Hello");
+  bmstu::string substr2("World");
+
+  bmstu::string manual_substr1;
+  for (size_t i = 0; i < 5; ++i) {
+    manual_substr1 += str[i];
+  }
+  
+  bmstu::string manual_substr2;
+  for (size_t i = 6; i < 11; ++i) {
+    manual_substr2 += str[i];
+  }
+  
+  ASSERT_STREQ(manual_substr1.c_str(), substr1.c_str());
+  ASSERT_STREQ(manual_substr2.c_str(), substr2.c_str());
+}
