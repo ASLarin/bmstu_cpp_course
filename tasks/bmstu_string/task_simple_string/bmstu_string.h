@@ -221,4 +221,5 @@ private:
   T* ptr_;
   size_t size_;
 };
-} // namespace bmstu
+}
+// namespace bmstu

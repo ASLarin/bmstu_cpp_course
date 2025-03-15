@@ -27,6 +27,7 @@ int sum_positive_numbers(const std::vector<int>& nums) {
 }
 
 
+
 bool is_divisible_by_10(const std::vector<int>& nums) {
   return std::any_of(nums.begin(), nums.end(), [](int x) { return x % 10 == 0; });
 }
