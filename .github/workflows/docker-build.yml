@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image-name: bmstu_cpp_course-bmstu:latest
-
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -1,67 +1,31 @@
-name: C++ Build and Run
+name: C++ Build (Сборка проекта)
 
 on:
   push:
-    branches: [main, hw]
+    branches:
+      - main
+      - hw
   pull_request:
-    branches: [main, hw]
+    branches:
+      - main
+      - hw
+  fork:
+    branches:
+      - main
+      - hw
 
 jobs:
-  build-docker:
-    uses: ./.github/workflows/docker-build.yml
-
-  test:
-    name: Build and Test
-    needs: build-docker
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
+      - name: Run docker-compose
+        uses: hoverkraft-tech/compose-action@v2.0.1
         with:
-          name: cpp_course-image
+          compose-file: "docker-compose.yml"
 
-      - name: Load Docker image
-        run: docker load -i cpp_course_image.tar
-
-      - name: Run tests in container
+      - name:
         run: |
-          # Create results directory on host
-          mkdir -p test-results
-          
-          # Mount repository and results directory
-          docker run --name cpp_course_container \
-            -v ${{ github.workspace }}:/workspace \
-            bmstu_cpp_course-bmstu:latest \
-            bash -c "cd /workspace && \
-                    mkdir -p build && \
-                    cd build && \
-                    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage' && \
-                    cmake --build . && \
-                    cd .. && \
-                    mkdir -p test-results && \
-                    # Run only our project's test executables, not GoogleTest's Python tests
-                    for test_bin in \$(find build/tasks -type f -executable); do \
-                      echo \"Running \$test_bin\" && \
-                      \$test_bin --gtest_output=xml:test-results/\$(basename \$test_bin).xml || true; \
-                    done && \
-                    # Copy test results to host-mounted directory
-                    cp -r test-results/* /workspace/test-results/ || true"
-          
-          # Show what test results were found
-          echo "Found test results:"
-          ls -la test-results/
-
-      - name: Upload test results
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: test_results_xml
-          path: test-results/
-          if-no-files-found: warn
-          retention-days: 5
+          docker compose up --build --abort-on-container-exit --exit-code-from bmstu
