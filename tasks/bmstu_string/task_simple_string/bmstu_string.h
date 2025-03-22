@@ -17,7 +17,7 @@ using u32string = basic_string<char32_t>;
 template <typename T>
 class basic_string
 {
-public:
+   public:
 	basic_string() : ptr_(new T[1]{0}), size_(0) {}
 
 	basic_string(size_t size) : ptr_(new T[size + 1]), size_(size)
@@ -236,9 +236,9 @@ public:
 			throw std::out_of_range("Index out of range");
 		}
 		return ptr_[index];
-	 }
+	}
 
-private:
+   private:
 	void clear_()
 	{
 		delete[] ptr_;
