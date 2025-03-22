@@ -20,20 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install clang-format
-      run: sudo apt-get install -y clang-format
-    
-    - name: Check clang-format
-      run: |
-        find tasks -iname '*.c' -o -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' | while read -r file
-        do
-          if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1
-          then
-            echo "❌ Code style issues found in: $file"
-            clang-format --dry-run --Werror "$file"
-            exit 1
-          fi
-        done
-        echo "✅ All files are properly formatted"
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+
+      - name: Check clang-format
+        run: |
+          find tasks -iname '*.c' -o -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' | while read -r file
+          do
+            if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1
+            then
+              echo "❌ Code style issues found in: $file"
+              clang-format --dry-run --Werror "$file"
+              exit 1
+            fi
+          done
+          echo "✅ All files are properly formatted"
