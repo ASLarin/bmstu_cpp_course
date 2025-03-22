@@ -3,6 +3,7 @@
 // NOLINTEND
 #include "str2int.h"
 
+
 TEST(str2int, BasicTest) {
   EXPECT_EQ(str2int("0"), 0);
 }
