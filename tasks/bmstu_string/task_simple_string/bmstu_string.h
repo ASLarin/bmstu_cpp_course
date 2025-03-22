@@ -264,4 +264,4 @@ class basic_string
 	T* ptr_;
 	size_t size_;
 };
-}  // namespace6 bmstu
+}  // namespace bmstu
