@@ -1,5 +1,4 @@
 #include "int2str.h"
-#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #define int_MIN (-2147483647 - 1)
