@@ -374,4 +374,4 @@ private:
     size_t capacity_ = 0;
 };
 
-}  // namespace bmstu
+}  //  namespace bmstu
