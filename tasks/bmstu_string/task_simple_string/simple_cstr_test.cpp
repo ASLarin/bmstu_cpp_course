@@ -288,4 +288,5 @@ TEST(StringTest, Item)
 	ASSERT_EQ(a_str[0], L'С');
 	ASSERT_EQ(a_str[1], L'Т');
 	ASSERT_EQ(a_str[a_str.size() - 1], L'Г');
+	//рр
 }
