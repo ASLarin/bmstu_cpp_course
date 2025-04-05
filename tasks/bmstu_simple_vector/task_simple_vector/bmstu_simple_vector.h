@@ -349,9 +349,12 @@ class simple_vector
 		return iterator(data_.get() + offset);
 	}
 
-	iterator erase(iterator pos)
-	{
-		*pos = std::move(*(pos + 1));
+	iterator erase(iterator pos) {
+		if (pos == end()) {
+			--size_;
+			return end();
+		}
+		std::move(pos + 1, end(), pos);
 		--size_;
 		return pos;
 	}
