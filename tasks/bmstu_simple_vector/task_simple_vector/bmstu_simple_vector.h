@@ -351,13 +351,9 @@ class simple_vector
 
 	iterator erase(iterator pos)
 	{
-		size_t offset = pos - begin();
-		for (size_t i = offset; i < size_ - 1; ++i)
-		{
-			data_[i] = std::move(data_[i + 1]);
-		}
+		*pos = std::move(*(pos + 1));
 		--size_;
-		return iterator(data_.get() + offset);
+		return pos;
 	}
 
 	void clear() noexcept { size_ = 0; }
