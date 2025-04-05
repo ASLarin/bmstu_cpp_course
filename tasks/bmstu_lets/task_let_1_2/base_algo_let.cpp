@@ -3,10 +3,10 @@
 
 std::vector<int> positive_numbers(const std::vector<int>& nums)
 {
-	// std::vector<int> result;
-	// std::copy_if(nums.begin(), nums.end(), std::back_inserter(result),
-	// 			 [](int value) { return value > 0; });
-	// return result;
+	std::vector<int> result;
+	std::copy_if(nums.begin(), nums.end(), std::back_inserter(result),
+				 [](int value) { return value > 0; });
+	return result;
 }
 
 void sort_positive_numbers(std::vector<int>& nums)
