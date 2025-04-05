@@ -349,8 +349,10 @@ class simple_vector
 		return iterator(data_.get() + offset);
 	}
 
-	iterator erase(iterator pos) {
-		if (pos == end()) {
+	iterator erase(iterator pos)
+	{
+		if (pos == end())
+		{
 			--size_;
 			return end();
 		}
