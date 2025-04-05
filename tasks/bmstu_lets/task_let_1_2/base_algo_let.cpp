@@ -11,9 +11,9 @@ std::vector<int> positive_numbers(const std::vector<int>& nums)
 
 void sort_positive_numbers(std::vector<int>& nums)
 {
-	auto partition_point = std::partition(nums.begin(), nums.end(),
-										  [](int num) { return num > 0; });
-	return std::sort(nums.begin(), partition_point);
+	// auto partition_point = std::partition(nums.begin(), nums.end(),
+	// 									  [](int num) { return num > 0; });
+	// return std::sort(nums.begin(), partition_point);
 }
 
 int sum_positive_numbers(const std::vector<int>& nums)
