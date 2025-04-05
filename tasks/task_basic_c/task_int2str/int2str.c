@@ -1,37 +1,62 @@
-#include "int2str.h"
+#include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#define int_MIN (-2147483647 - 1)
+#include <stdio.h>
 #define int_MAX 2147483647
-char* int2str(int number) {
-  char* str = (char*)malloc(12 * sizeof(char));
+#define int_MIN (-2147483647 - 1)
 
-  bool is_negative = false;
-  int i = 0;
-  long long int remainder = number;
+bool is_space(char c)
+{
+	return (c == ' ');
+}
+bool is_digit(char c)
+{
+	return (c >= '0' && c <= '9');
+}
 
-  if (remainder < 0) {
-    is_negative = true;
-    remainder = -remainder;
-  }
-  if (remainder == 0) {
-    str[i++] = '0';
-    str[i] = '\0';
-    return str;
-  }
-  while (remainder != 0) {
-    str[i++] = (remainder % 10) + '0';
-    remainder /= 10;
-  }
-  if (is_negative) {
-    str[i++] = '-';
-  }
-  str[i] = '\0';
-  for (int j = 0; j < i / 2; j++) {
-    char temp = str[j];
-    str[j] = str[i - j - 1];
-    str[i - j - 1] = temp;
-  }
+int str2int(const char* str)
+{
+	int sign = 1;
 
-  return str;
+	if (*str == '\0')
+	{
+		assert(1 == 0);
+	}
+
+	if (*str == '-')
+	{
+		str++;
+		sign = -1;
+		if (*str == '\0')
+		{
+			assert(1 == 0);
+		}
+	}
+	else if (*str == '+')
+	{
+		str++;
+	}
+
+	int result = 0;
+	while (is_space(*str))
+	{
+		str++;
+	}
+
+	while (is_digit(*str))
+	{
+		int digit = *str - '0';
+		if (sign == 1 && (result > (int_MAX - digit) / 10))
+		{
+			assert(1 == 0);
+		}
+		if (sign == -1 && (result > (int_MIN - digit) / 10))
+		{
+			assert(1 == 0);
+		}
+
+		result = result * 10 + digit;
+		str++;
+	}
+
+	return sign * result;
 }
