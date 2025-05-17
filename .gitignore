@@ -4,7 +4,8 @@ Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
-
+.gdbinit
+.lldbinit
 # Dump file
 *.stackdump
 
