@@ -26,99 +26,179 @@ class list
 	struct iterator
 		: public abstract_iterator<iterator, T, std::bidirectional_iterator_tag>
 	{
-		// Добавляем необходимые типы
-		using difference_type = std::ptrdiff_t;
-		using value_type = T;
-		using pointer = T*;
-		using reference = T&;
-		using iterator_category = std::bidirectional_iterator_tag;
-
 		node* current;
 		iterator() : current(nullptr) {}
 		iterator(node* node) : current(node) {}
 
-		iterator& operator++() override
+		::bmstu::list<T>::iterator& operator++() override
 		{
-			current = current->next_node_;
-			return *this;
-		}
-
-		iterator& operator--() override
-		{
-			current = current->prev_node_;
-			return *this;
-		}
-
-		iterator operator++(int) override
-		{
-			iterator temp = *this;
-			current = current->next_node_;
-			return temp;
-		}
-
-		iterator operator--(int) override
-		{
-			iterator temp = *this;
-			current = current->prev_node_;
-			return temp;
-		}
-
-		iterator& operator+=(const difference_type& n) override
-		{
-			for (difference_type i = 0; i < n; ++i)
+			if (current)
+			{
 				current = current->next_node_;
+			}
 			return *this;
 		}
 
-		iterator& operator-=(const difference_type& n) override
+		::bmstu::list<T>::iterator& operator--() override
 		{
-			for (difference_type i = 0; i < n; ++i)
+			if (current)
+			{
 				current = current->prev_node_;
+			}
 			return *this;
 		}
 
-		iterator operator+(const difference_type& n) const override
+		::bmstu::list<T>::iterator operator++(int) override
 		{
-			iterator result = *this;
-			for (difference_type i = 0; i < n; ++i)
-				result.current = result.current->next_node_;
-			return result;
+			iterator tmp = *this;
+			++(*this);
+			return tmp;
 		}
 
-		iterator operator-(const difference_type& n) const override
+		::bmstu::list<T>::iterator operator--(int) override
 		{
-			iterator result = *this;
-			for (difference_type i = 0; i < n; ++i)
-				result.current = result.current->prev_node_;
-			return result;
+			iterator tmp = *this;
+			--(*this);
+			return tmp;
 		}
 
-		reference operator*() const override { return current->value_; }
+		::bmstu::list<T>::iterator& operator+=(
+			const typename abstract_iterator<
+				typename ::bmstu::list<T>::iterator,
+				T,
+				std::bidirectional_iterator_tag>::difference_type& n) override
+		{
+			if (n > 0)
+			{
+				for (typename abstract_iterator<
+						 typename ::bmstu::list<T>::iterator, T,
+						 std::bidirectional_iterator_tag>::difference_type i =
+						 0;
+					 i < n && current; ++i)
+				{
+					++(*this);
+				}
+			}
+			else if (n < 0)
+			{
+				for (typename abstract_iterator<
+						 typename ::bmstu::list<T>::iterator, T,
+						 std::bidirectional_iterator_tag>::difference_type i =
+						 0;
+					 i < -n && current; ++i)
+				{
+					--(*this);
+				}
+			}
+			return *this;
+		}
 
-		pointer operator->() const override { return &(current->value_); }
+		::bmstu::list<T>::iterator& operator-=(
+			const typename abstract_iterator<
+				iterator,
+				T,
+				std::bidirectional_iterator_tag>::difference_type& n) override
+		{
+			return (*this) += -n;
+		}
 
-		bool operator==(const iterator& other) const override
+		::bmstu::list<T>::iterator operator+(
+			const typename abstract_iterator<iterator,
+											 T,
+											 std::bidirectional_iterator_tag>::
+				difference_type& n) const override
+		{
+			iterator tmp = *this;
+			return tmp += n;
+		}
+
+		::bmstu::list<T>::iterator operator-(
+			const typename abstract_iterator<iterator,
+											 T,
+											 std::bidirectional_iterator_tag>::
+				difference_type& n) const override
+		{
+			iterator tmp = *this;
+			return tmp -= n;
+		}
+
+		typename abstract_iterator<iterator,
+								   T,
+								   std::bidirectional_iterator_tag>::reference
+		operator*() const override
+		{
+			return current->value_;
+		}
+
+		typename abstract_iterator<iterator,
+								   T,
+								   std::bidirectional_iterator_tag>::pointer
+		operator->() const override
+		{
+			return &(current->value_);
+		}
+
+		bool operator==(const ::bmstu::list<T>::iterator& other) const override
 		{
 			return current == other.current;
 		}
 
-		bool operator!=(const iterator& other) const override
+		bool operator!=(const ::bmstu::list<T>::iterator& other) const override
 		{
-			return current != other.current;
+			return !(*this == other);
 		}
 
 		explicit operator bool() const override { return current != nullptr; }
 
-		difference_type operator-(const iterator& other) const override
+		// Исправить на возврат значения вместо ссылки
+		typename abstract_iterator<
+			iterator,
+			T,
+			std::bidirectional_iterator_tag>::difference_type
+		operator-(const ::bmstu::list<T>::iterator& other) const override
 		{
-			difference_type count = 0;
-			iterator it = other;
-			while (it != *this)
+			// Если итераторы равны, расстояние 0
+			if (*this == other)
 			{
-				++it;
-				++count;
+				return 0;
 			}
-			return count;
+
+			// Проверяем направление от other к this
+			typename abstract_iterator<
+				iterator, T, std::bidirectional_iterator_tag>::difference_type
+				dist = 0;
+			iterator temp = other;
+			while (temp.current != nullptr && temp != *this)
+			{
+				++temp;
+				++dist;
+			}
+
+			// Если нашли this, возвращаем положительное расстояние
+			if (temp == *this)
+			{
+				return dist;
+			}
+
+			// Если не нашли, пробуем в другом направлении
+			dist = 0;
+			temp = *this;
+			while (temp.current != nullptr && temp != other)
+			{
+				++temp;
+				--dist;	 // Отрицательное расстояние, так как идём от this к
+						 // other
+			}
+
+			// Если нашли other, возвращаем отрицательное расстояние
+			if (temp == other)
+			{
+				return dist;
+			}
+
+			// Если не нашли в обоих направлениях, итераторы из разных
+			// контейнеров
+			return 0;
 		}
 	};
 	using const_iterator = iterator;
@@ -354,4 +434,5 @@ class list
 	node* tail_ = nullptr;
 	node* head_ = nullptr;
 };
+// namespace bmstu
 }  // namespace bmstu
