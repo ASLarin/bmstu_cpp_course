@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
 import gdb.printing
+import re
+from typing import List
 
 class SimpleVectorPrinter:
     def __init__(self, val):

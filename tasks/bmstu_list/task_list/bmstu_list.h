@@ -28,7 +28,8 @@ class list
 	{
 		node* current;
 		iterator() : current(nullptr) {}
-		iterator(node* node) : current(node) {}
+		iterator(node* n) : current(n) {}
+		iterator(const node* n) : current(const_cast<node*>(n)) {}
 
 		::bmstu::list<T>::iterator& operator++() override
 		{
@@ -205,11 +206,10 @@ class list
 
 	list()
 	{
-		// Создаем пустой список с фиктивными узлами
-		head_ = new node();
-		tail_ = new node();
-		head_->next_node_ = tail_;
-		tail_->prev_node_ = head_;
+		// Связываем фиктивные узлы
+		head_.next_node_ = &tail_;
+		tail_.prev_node_ = &head_;
+		size_ = 0;
 	}
 
 	template <typename it>
@@ -237,15 +237,26 @@ class list
 		}
 	}
 
-	list(list&& other) : size_(other.size_)
+	list(list&& other) noexcept : size_(other.size_)
 	{
-		// Перемещение указателей
-		head_ = other.head_;
-		tail_ = other.tail_;
+		// Перемещение связей
+		head_.next_node_ = other.head_.next_node_;
+		tail_.prev_node_ = other.tail_.prev_node_;
+
+		if (head_.next_node_ != &other.tail_)
+		{
+			head_.next_node_->prev_node_ = &head_;
+			tail_.prev_node_->next_node_ = &tail_;
+		}
+		else
+		{
+			head_.next_node_ = &tail_;
+			tail_.prev_node_ = &head_;
+		}
 
 		// Обнуление источника
-		other.head_ = nullptr;
-		other.tail_ = nullptr;
+		other.head_.next_node_ = &other.tail_;
+		other.tail_.prev_node_ = &other.head_;
 		other.size_ = 0;
 	}
 
@@ -255,19 +266,19 @@ class list
 	template <typename Type>
 	void push_back(const Type& value)
 	{
-		node* last = tail_->prev_node_;
-		node* new_node = new node(last, value, tail_);
+		node* last = tail_.prev_node_;
+		node* new_node = new node(last, value, &tail_);
 		last->next_node_ = new_node;
-		tail_->prev_node_ = new_node;
+		tail_.prev_node_ = new_node;
 		++size_;
 	}
 
 	template <typename Type>
 	void push_front(const Type& value)
 	{
-		node* first = head_->next_node_;
-		node* new_node = new node(head_, value, first);
-		head_->next_node_ = new_node;
+		node* first = head_.next_node_;
+		node* new_node = new node(&head_, value, first);
+		head_.next_node_ = new_node;
 		first->prev_node_ = new_node;
 		++size_;
 	}
@@ -279,17 +290,15 @@ class list
 	~list()
 	{
 		clear();
-		delete head_;
-		delete tail_;
 	}
 
 	void clear()
 	{
 		while (!empty())
 		{
-			node* to_delete = head_->next_node_;
-			head_->next_node_ = to_delete->next_node_;
-			to_delete->next_node_->prev_node_ = head_;
+			node* to_delete = head_.next_node_;
+			head_.next_node_ = to_delete->next_node_;
+			to_delete->next_node_->prev_node_ = &head_;
 			delete to_delete;
 			--size_;
 		}
@@ -299,32 +308,49 @@ class list
 
 	void swap(list& other) noexcept
 	{
-		std::swap(head_, other.head_);
-		std::swap(tail_, other.tail_);
+		std::swap(head_.next_node_, other.head_.next_node_);
+		std::swap(tail_.prev_node_, other.tail_.prev_node_);
 		std::swap(size_, other.size_);
+
+		if (head_.next_node_)
+		{
+			head_.next_node_->prev_node_ = &head_;
+		}
+		if (tail_.prev_node_)
+		{
+			tail_.prev_node_->next_node_ = &tail_;
+		}
+		if (other.head_.next_node_)
+		{
+			other.head_.next_node_->prev_node_ = &other.head_;
+		}
+		if (other.tail_.prev_node_)
+		{
+			other.tail_.prev_node_->next_node_ = &other.tail_;
+		}
 	}
 
 	friend void swap(list& l, list& r) { l.swap(r); }
 
 #pragma region iterators
 
-	iterator begin() noexcept { return iterator{head_->next_node_}; }
+	iterator begin() noexcept { return iterator{head_.next_node_}; }
 
-	iterator end() noexcept { return iterator{tail_}; }
+	iterator end() noexcept { return iterator{&tail_}; }
 
 	const_iterator begin() const noexcept
 	{
-		return const_iterator{head_->next_node_};
+		return const_iterator{head_.next_node_};
 	}
 
-	const_iterator end() const noexcept { return const_iterator{tail_}; }
+	const_iterator end() const noexcept { return const_iterator{&tail_}; }
 
 	const_iterator cbegin() const noexcept
 	{
-		return const_iterator{head_->next_node_};
+		return const_iterator{head_.next_node_};
 	}
 
-	const_iterator cend() const noexcept { return const_iterator{tail_}; }
+	const_iterator cend() const noexcept { return const_iterator{&tail_}; }
 
 #pragma endregion
 
@@ -431,8 +457,7 @@ class list
 	}
 
 	size_t size_ = 0;
-	node* tail_ = nullptr;
-	node* head_ = nullptr;
+	node tail_;
+	node head_;
 };
-// namespace bmstu
 }  // namespace bmstu
