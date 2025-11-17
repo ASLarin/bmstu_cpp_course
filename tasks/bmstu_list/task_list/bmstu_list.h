@@ -13,7 +13,7 @@ class list
 		node() = default;
 
 		node(node* prev, const T& value, node* next)
-			: next_node_(nullptr), prev_node_(nullptr)
+			: value_(value), next_node_(next), prev_node_(prev)
 		{
 		}
 
@@ -28,64 +28,237 @@ class list
 	{
 		node* current;
 		iterator() : current(nullptr) {}
-		iterator(node* node) : current(node) {}
-		iterator& operator++() override { return *this; }
-		iterator& operator--() override { return *this; }
-		iterator operator++(int) override { return nullptr; }
-		iterator operator--(int) override { return nullptr; }
-		iterator& operator+=(const iterator::difference_type& n) override
+		iterator(node* n) : current(n) {}
+		iterator(const node* n) : current(const_cast<node*>(n)) {}
+
+		::bmstu::list<T>::iterator& operator++() override
 		{
+			if (current)
+			{
+				current = current->next_node_;
+			}
 			return *this;
 		}
-		iterator& operator-=(const iterator::difference_type& n) override
+
+		::bmstu::list<T>::iterator& operator--() override
 		{
+			if (current)
+			{
+				current = current->prev_node_;
+			}
 			return *this;
 		}
-		iterator operator+(const iterator::difference_type& n) const override
+
+		::bmstu::list<T>::iterator operator++(int) override
 		{
-			return nullptr;
+			iterator tmp = *this;
+			++(*this);
+			return tmp;
 		}
-		iterator operator-(const iterator::difference_type& n) const override
+
+		::bmstu::list<T>::iterator operator--(int) override
 		{
-			return nullptr;
+			iterator tmp = *this;
+			--(*this);
+			return tmp;
 		}
-		iterator::reference operator*() const override
+
+		::bmstu::list<T>::iterator& operator+=(
+			const typename abstract_iterator<
+				typename ::bmstu::list<T>::iterator,
+				T,
+				std::bidirectional_iterator_tag>::difference_type& n) override
+		{
+			if (n > 0)
+			{
+				for (typename abstract_iterator<
+						 typename ::bmstu::list<T>::iterator, T,
+						 std::bidirectional_iterator_tag>::difference_type i =
+						 0;
+					 i < n && current; ++i)
+				{
+					++(*this);
+				}
+			}
+			else if (n < 0)
+			{
+				for (typename abstract_iterator<
+						 typename ::bmstu::list<T>::iterator, T,
+						 std::bidirectional_iterator_tag>::difference_type i =
+						 0;
+					 i < -n && current; ++i)
+				{
+					--(*this);
+				}
+			}
+			return *this;
+		}
+
+		::bmstu::list<T>::iterator& operator-=(
+			const typename abstract_iterator<
+				iterator,
+				T,
+				std::bidirectional_iterator_tag>::difference_type& n) override
+		{
+			return (*this) += -n;
+		}
+
+		::bmstu::list<T>::iterator operator+(
+			const typename abstract_iterator<iterator,
+											 T,
+											 std::bidirectional_iterator_tag>::
+				difference_type& n) const override
+		{
+			iterator tmp = *this;
+			return tmp += n;
+		}
+
+		::bmstu::list<T>::iterator operator-(
+			const typename abstract_iterator<iterator,
+											 T,
+											 std::bidirectional_iterator_tag>::
+				difference_type& n) const override
+		{
+			iterator tmp = *this;
+			return tmp -= n;
+		}
+
+		typename abstract_iterator<iterator,
+								   T,
+								   std::bidirectional_iterator_tag>::reference
+		operator*() const override
 		{
 			return current->value_;
 		}
-		iterator::pointer operator->() const override
+
+		typename abstract_iterator<iterator,
+								   T,
+								   std::bidirectional_iterator_tag>::pointer
+		operator->() const override
 		{
 			return &(current->value_);
 		}
-		bool operator==(const iterator& other) const override
+
+		bool operator==(const ::bmstu::list<T>::iterator& other) const override
 		{
 			return current == other.current;
 		}
-		bool operator!=(const iterator& other) const override
+
+		bool operator!=(const ::bmstu::list<T>::iterator& other) const override
 		{
-			return current != other.current;
+			return !(*this == other);
 		}
+
 		explicit operator bool() const override { return current != nullptr; }
-		iterator::difference_type operator-(
-			const iterator& other) const override
+
+		// Исправить на возврат значения вместо ссылки
+		typename abstract_iterator<
+			iterator,
+			T,
+			std::bidirectional_iterator_tag>::difference_type
+		operator-(const ::bmstu::list<T>::iterator& other) const override
 		{
+			// Если итераторы равны, расстояние 0
+			if (*this == other)
+			{
+				return 0;
+			}
+
+			// Проверяем направление от other к this
+			typename abstract_iterator<
+				iterator, T, std::bidirectional_iterator_tag>::difference_type
+				dist = 0;
+			iterator temp = other;
+			while (temp.current != nullptr && temp != *this)
+			{
+				++temp;
+				++dist;
+			}
+
+			// Если нашли this, возвращаем положительное расстояние
+			if (temp == *this)
+			{
+				return dist;
+			}
+
+			// Если не нашли, пробуем в другом направлении
+			dist = 0;
+			temp = *this;
+			while (temp.current != nullptr && temp != other)
+			{
+				++temp;
+				--dist;	 // Отрицательное расстояние, так как идём от this к
+						 // other
+			}
+
+			// Если нашли other, возвращаем отрицательное расстояние
+			if (temp == other)
+			{
+				return dist;
+			}
+
+			// Если не нашли в обоих направлениях, итераторы из разных
+			// контейнеров
 			return 0;
 		}
 	};
 	using const_iterator = iterator;
 
-	list() {}
-
-	template <typename it>
-	list(it begin, it end)
+	list()
 	{
+		// Связываем фиктивные узлы
+		head_.next_node_ = &tail_;
+		tail_.prev_node_ = &head_;
+		size_ = 0;
 	}
 
-	list(std::initializer_list<T> values) {}
+	template <typename it>
+	list(it begin, it end) : list()
+	{
+		for (auto iter = begin; iter != end; ++iter)
+		{
+			push_back(*iter);
+		}
+	}
 
-	list(const list& other) {}
+	list(std::initializer_list<T> values) : list()
+	{
+		for (const auto& val : values)
+		{
+			push_back(val);
+		}
+	}
 
-	list(list&& other) {}
+	list(const list& other) : list()
+	{
+		for (const auto& item : other)
+		{
+			push_back(item);
+		}
+	}
+
+	list(list&& other) noexcept : size_(other.size_)
+	{
+		// Перемещение связей
+		head_.next_node_ = other.head_.next_node_;
+		tail_.prev_node_ = other.tail_.prev_node_;
+
+		if (head_.next_node_ != &other.tail_)
+		{
+			head_.next_node_->prev_node_ = &head_;
+			tail_.prev_node_->next_node_ = &tail_;
+		}
+		else
+		{
+			head_.next_node_ = &tail_;
+			tail_.prev_node_ = &head_;
+		}
+
+		// Обнуление источника
+		other.head_.next_node_ = &other.tail_;
+		other.tail_.prev_node_ = &other.head_;
+		other.size_ = 0;
+	}
 
 #pragma endregion
 #pragma region pushs
@@ -93,121 +266,198 @@ class list
 	template <typename Type>
 	void push_back(const Type& value)
 	{
-		node* last = tail_->prev_node_;
-		node* new_last = new node(tail_->prev_node_, value, tail_);
-		tail_->prev_node_ = new_last;
-		last->next_node_ = new_last;
+		node* last = tail_.prev_node_;
+		node* new_node = new node(last, value, &tail_);
+		last->next_node_ = new_node;
+		tail_.prev_node_ = new_node;
 		++size_;
 	}
 
 	template <typename Type>
 	void push_front(const Type& value)
 	{
-		// адрес реального последнего элемента
-		node* first = head_->next_node_;
-		node* new_first = new node(head_, value, first);
-		head_->next_node_ = new_first;
-		first->prev_node_ = new_first;
+		node* first = head_.next_node_;
+		node* new_node = new node(&head_, value, first);
+		head_.next_node_ = new_node;
+		first->prev_node_ = new_node;
 		++size_;
 	}
 
 #pragma endregion
 
-	bool empty() const
+	bool empty() const noexcept { return size_ == 0; }
 
-		noexcept
+	~list()
 	{
-		return (size_ == 0u);
+		clear();
 	}
 
-	~list() {}
-
-	void clear() {}
-
-	size_t size() const { return 0; }
-
-	void swap(list& other)
-
-		noexcept
+	void clear()
 	{
+		while (!empty())
+		{
+			node* to_delete = head_.next_node_;
+			head_.next_node_ = to_delete->next_node_;
+			to_delete->next_node_->prev_node_ = &head_;
+			delete to_delete;
+			--size_;
+		}
+	}
+
+	size_t size() const { return size_; }
+
+	void swap(list& other) noexcept
+	{
+		std::swap(head_.next_node_, other.head_.next_node_);
+		std::swap(tail_.prev_node_, other.tail_.prev_node_);
+		std::swap(size_, other.size_);
+
+		if (head_.next_node_)
+		{
+			head_.next_node_->prev_node_ = &head_;
+		}
+		if (tail_.prev_node_)
+		{
+			tail_.prev_node_->next_node_ = &tail_;
+		}
+		if (other.head_.next_node_)
+		{
+			other.head_.next_node_->prev_node_ = &other.head_;
+		}
+		if (other.tail_.prev_node_)
+		{
+			other.tail_.prev_node_->next_node_ = &other.tail_;
+		}
 	}
 
 	friend void swap(list& l, list& r) { l.swap(r); }
 
 #pragma region iterators
 
-	iterator begin()
+	iterator begin() noexcept { return iterator{head_.next_node_}; }
 
-		noexcept
+	iterator end() noexcept { return iterator{&tail_}; }
+
+	const_iterator begin() const noexcept
 	{
-		return iterator{head_->next_node_};
+		return const_iterator{head_.next_node_};
 	}
 
-	iterator end()
+	const_iterator end() const noexcept { return const_iterator{&tail_}; }
 
-		noexcept
+	const_iterator cbegin() const noexcept
 	{
-		return iterator{tail_};
+		return const_iterator{head_.next_node_};
 	}
 
-	const_iterator begin() const
-
-		noexcept
-	{
-		return const_iterator{head_->next_node_};
-	}
-
-	const_iterator end() const
-
-		noexcept
-	{
-		return const_iterator{tail_};
-	}
-
-	const_iterator cbegin() const
-
-		noexcept
-	{
-		return const_iterator{head_->next_node_};
-	}
-
-	const_iterator cend() const
-
-		noexcept
-	{
-		return const_iterator{tail_};
-	}
+	const_iterator cend() const noexcept { return const_iterator{&tail_}; }
 
 #pragma endregion
 
-	T operator[](size_t pos) const {}
+	T operator[](size_t pos) const
+	{
+		auto it = begin();
+		for (size_t i = 0; i < pos; ++i)
+		{
+			++it;
+		}
+		return *it;
+	}
 
-	T& operator[](size_t pos) {}
+	T& operator[](size_t pos)
+	{
+		auto it = begin();
+		for (size_t i = 0; i < pos; ++i)
+		{
+			++it;
+		}
+		return *it;
+	}
 
-	friend bool operator==(const list& l, const list& r) { return true; }
+	friend bool operator==(const list& l, const list& r)
+	{
+		if (l.size() != r.size())
+		{
+			return false;
+		}
 
-	friend bool operator!=(const list& l, const list& r) { return false; }
+		auto l_it = l.begin();
+		auto r_it = r.begin();
 
-	friend auto operator<=>(const list& lhs, const list& rhs) { return true; }
+		while (l_it != l.end())
+		{
+			if (*l_it != *r_it)
+			{
+				return false;
+			}
+			++l_it;
+			++r_it;
+		}
+
+		return true;
+	}
+
+	friend bool operator!=(const list& l, const list& r) { return !(l == r); }
+
+	friend auto operator<=>(const list& lhs, const list& rhs)
+	{
+		return lexicographical_compare_(lhs, rhs) ? std::strong_ordering::less
+			   : lexicographical_compare_(rhs, lhs)
+				   ? std::strong_ordering::greater
+				   : std::strong_ordering::equal;
+	}
 
 	friend std::ostream& operator<<(std::ostream& os, const list& other)
 	{
+		os << "{";
+		bool first = true;
+		for (const auto& item : other)
+		{
+			if (!first)
+			{
+				os << ", ";
+			}
+			os << item;
+			first = false;
+		}
+		os << "}";
 		return os;
 	}
 
 	iterator insert(const_iterator pos, const T& value)
 	{
-		return iterator{nullptr};
+		node* current = pos.current;
+		node* prev = current->prev_node_;
+
+		node* new_node = new node(prev, value, current);
+		prev->next_node_ = new_node;
+		current->prev_node_ = new_node;
+
+		++size_;
+		return iterator{new_node};
 	}
 
    private:
 	static bool lexicographical_compare_(const list<T>& l, const list<T>& r)
 	{
-		return "123";
+		auto l_it = l.begin();
+		auto r_it = r.begin();
+
+		while (l_it != l.end() && r_it != r.end())
+		{
+			if (*l_it < *r_it)
+				return true;
+			if (*r_it < *l_it)
+				return false;
+			++l_it;
+			++r_it;
+		}
+
+		return l_it == l.end() && r_it != r.end();
 	}
 
 	size_t size_ = 0;
-	node* tail_ = nullptr;
-	node* head_ = nullptr;
+	node tail_;
+	node head_;
 };
 }  // namespace bmstu
