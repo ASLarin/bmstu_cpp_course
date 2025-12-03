@@ -287,10 +287,7 @@ class list
 
 	bool empty() const noexcept { return size_ == 0; }
 
-	~list()
-	{
-		clear();
-	}
+	~list() { clear(); }
 
 	void clear()
 	{
