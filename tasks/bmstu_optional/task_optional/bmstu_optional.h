@@ -1,9 +1,9 @@
 #pragma once
 #include <cstdint>
 #include <exception>
+#include <new>
 #include <type_traits>
 #include <utility>
-#include <new>
 
 namespace bmstu
 {
@@ -18,7 +18,7 @@ class bad_optional_access : public std::exception
    public:
 	using exception::exception;
 
-	const char* what() const noexcept override { return "Bad optional access"; }
+	const char* what() const noexcept override { return "Bad optional acces"; }
 };
 
 template <typename T>
