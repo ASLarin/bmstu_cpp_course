@@ -1054,3 +1054,4 @@ build
 build/*
 .lldbinit
 .gdbinit
+build_vs
